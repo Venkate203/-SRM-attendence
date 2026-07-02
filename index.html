@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
+  <meta name="theme-color" content="#0d9488" />
+  <meta name="description" content="SRM College of Pharmacy Attendance Management System" />
+  <title>SRM Attendance System</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen" class="login-screen" role="dialog" aria-labelledby="loginTitle">
+    <div class="login-card">
+      <div class="login-logo">SRM</div>
+      <h1 id="loginTitle" class="login-title">SRM College of Pharmacy</h1>
+      <p class="login-sub">Attendance Management System</p>
+      <form id="loginForm" autocomplete="off">
+        <label for="loginUser">Username</label>
+        <input id="loginUser" type="text" required autocomplete="username" placeholder="Faculty username" />
+        <label for="loginPass">Password</label>
+        <input id="loginPass" type="password" required autocomplete="current-password" placeholder="Password" />
+        <div id="loginError" class="login-error" aria-live="polite"></div>
+        <button type="submit" class="btn-primary btn-block">Sign In</button>
+      </form>
+      <p class="login-hint">Default: <strong>admin</strong> / <strong>srm@2026</strong></p>
+    </div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div id="app" class="app hidden">
+    <!-- TOP HEADER -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark">SRM</div>
+        <div class="brand-text">
+          <h1>SRM Attendance</h1>
+          <span id="headerSub">Ward Round Management</span>
+        </div>
+      </div>
+      <button id="logoutBtn" class="icon-btn" aria-label="Logout" title="Logout">⎋</button>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main id="mainContent" class="content">
+
+      <!-- ATTENDANCE PAGE -->
+      <section id="page-attendance" class="page active">
+        <div class="filters-card">
+          <div class="filter-row">
+            <div class="filter">
+              <label>Program</label>
+              <select id="fProgram"></select>
+            </div>
+            <div class="filter">
+              <label>Year</label>
+              <select id="fYear"></select>
+            </div>
+          </div>
+          <div class="filter-row">
+            <div class="filter">
+              <label>Department</label>
+              <select id="fDepartment"></select>
+            </div>
+            <div class="filter">
+              <label>Day</label>
+              <select id="fDay"></select>
+            </div>
+          </div>
+          <div class="filter-row">
+            <div class="filter">
+              <label>Date</label>
+              <input id="fDate" type="date" />
+            </div>
+            <div class="filter">
+              <label>Search</label>
+              <input id="fSearch" type="search" placeholder="Name or reg no…" />
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-sticky" id="summaryBar">
+          <div class="sum-item"><span class="sum-label">Present</span><span id="sumPresent" class="sum-val">0</span></div>
+          <div class="sum-item"><span class="sum-label">Absent</span><span id="sumAbsent" class="sum-val">0</span></div>
+          <div class="sum-item"><span class="sum-label">%</span><span id="sumPct" class="sum-val">0.0%</span></div>
+        </div>
+
+        <div class="quick-actions">
+          <button class="chip" id="btnAllPresent">All Present</button>
+          <button class="chip" id="btnAllAbsent">All Absent</button>
+          <button class="chip" id="btnSaveTop">Save</button>
+          <button class="chip" id="btnExportPdf">PDF</button>
+          <button class="chip" id="btnExportXlsx">Excel</button>
+          <button class="chip" id="btnPrint">Print</button>
+        </div>
+
+        <div id="studentList" class="student-list" aria-live="polite"></div>
+
+        <button id="fabSave" class="fab" aria-label="Save Attendance">Save Attendance</button>
+      </section>
+
+      <!-- STUDENTS PAGE -->
+      <section id="page-students" class="page">
+        <div class="page-head">
+          <h2>Students</h2>
+          <div class="head-actions">
+            <button class="btn-secondary" id="btnAddStudent">+ Add</button>
+            <button class="btn-secondary" id="btnImportStudents">Import</button>
+            <button class="btn-secondary" id="btnExportStudents">Export</button>
+          </div>
+        </div>
+        <input type="file" id="importFile" accept=".csv,.xlsx,.xls" hidden />
+        <div class="filters-card">
+          <div class="filter-row">
+            <div class="filter">
+              <label>Search</label>
+              <input id="sSearch" type="search" placeholder="Name or reg no…" />
+            </div>
+            <div class="filter">
+              <label>Program</label>
+              <select id="sProgram"></select>
+            </div>
+          </div>
+          <div class="filter-row">
+            <div class="filter">
+              <label>Year</label>
+              <select id="sYear"></select>
+            </div>
+            <div class="filter">
+              <label>Department</label>
+              <select id="sDepartment"></select>
+            </div>
+          </div>
+        </div>
+        <div id="studentsList" class="student-list"></div>
+      </section>
+
+      <!-- HISTORY PAGE -->
+      <section id="page-history" class="page">
+        <div class="page-head"><h2>History</h2></div>
+        <div id="historyList" class="history-list"></div>
+      </section>
+
+      <!-- REPORTS PAGE -->
+      <section id="page-reports" class="page">
+        <div class="page-head"><h2>Reports</h2></div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-num" id="stTotalStudents">0</div><div class="stat-lbl">Students</div></div>
+          <div class="stat-card"><div class="stat-num" id="stTotalSessions">0</div><div class="stat-lbl">Sessions</div></div>
+          <div class="stat-card"><div class="stat-num" id="stAvgAttend">0%</div><div class="stat-lbl">Avg Attendance</div></div>
+          <div class="stat-card"><div class="stat-num" id="stTotalDepts">0</div><div class="stat-lbl">Departments</div></div>
+        </div>
+        <div class="report-buttons">
+          <button class="report-btn" data-report="daily">Daily Report</button>
+          <button class="report-btn" data-report="weekly">Weekly Report</button>
+          <button class="report-btn" data-report="monthly">Monthly Report</button>
+          <button class="report-btn" data-report="department">Department Report</button>
+          <button class="report-btn" data-report="student">Student Attendance Report</button>
+          <button class="report-btn" data-report="program">Program-wise Report</button>
+          <button class="report-btn" data-report="year">Year-wise Report</button>
+        </div>
+        <div id="reportOutput" class="report-output"></div>
+      </section>
+
+      <!-- SETTINGS PAGE -->
+      <section id="page-settings" class="page">
+        <div class="page-head"><h2>Settings</h2></div>
+
+        <div class="settings-group">
+          <h3>Appearance</h3>
+          <div class="settings-row">
+            <span>Dark Mode</span>
+            <label class="switch"><input type="checkbox" id="darkToggle" /><span class="slider"></span></label>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Departments</h3>
+          <div id="deptList" class="chip-list"></div>
+          <div class="inline-add">
+            <input id="newDept" type="text" placeholder="Add department…" />
+            <button class="btn-primary" id="addDeptBtn">Add</button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>App</h3>
+          <button class="settings-btn" id="installBtn" hidden>Install App</button>
+          <button class="settings-btn" id="backupBtn">Export Backup</button>
+          <button class="settings-btn" id="restoreBtn">Import Backup</button>
+          <input type="file" id="restoreFile" accept=".json" hidden />
+          <button class="settings-btn" id="usageBtn">Storage Usage</button>
+          <button class="settings-btn danger" id="resetAttendanceBtn">Reset Attendance</button>
+          <button class="settings-btn danger" id="clearAllBtn">Clear All Data</button>
+        </div>
+
+        <div class="settings-group">
+          <h3>Account</h3>
+          <button class="settings-btn" id="changePwdBtn">Change Password</button>
+        </div>
+
+        <p class="footer-note">SRM College of Pharmacy · v1.0</p>
+      </section>
+
+    </main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav" role="tablist" aria-label="Main navigation">
+      <button class="nav-item active" data-page="attendance" role="tab" aria-selected="true">
+        <span class="nav-ico">✓</span><span class="nav-lbl">Attendance</span>
+      </button>
+      <button class="nav-item" data-page="students" role="tab">
+        <span class="nav-ico">◉</span><span class="nav-lbl">Students</span>
+      </button>
+      <button class="nav-item" data-page="history" role="tab">
+        <span class="nav-ico">◷</span><span class="nav-lbl">History</span>
+      </button>
+      <button class="nav-item" data-page="reports" role="tab">
+        <span class="nav-ico">▤</span><span class="nav-lbl">Reports</span>
+      </button>
+      <button class="nav-item" data-page="settings" role="tab">
+        <span class="nav-ico">⚙</span><span class="nav-lbl">Settings</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- MODAL CONTAINER -->
+  <div id="modalRoot" class="modal-root hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card" id="modalCard"></div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- LIBRARIES (loaded async, cached by SW) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
